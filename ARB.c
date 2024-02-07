@@ -5,7 +5,7 @@ typedef int TIPOCHAVE;
 
 typedef struct aux {
     TIPOCHAVE id;
-    struct aux* pai; // pont para o pai (herdar cor e outras funcionalidades)
+    struct aux* pai; // pont para o pai
     struct aux* esq; 
     struct aux* dir;
     int cor; // 0: preto | 1: vermelho
