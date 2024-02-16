@@ -4,8 +4,8 @@
 typedef int TIPOCHAVE;
 
 typedef struct aux {
-    TIPOCHAVE id;
-    struct aux* pai; // pont para o pai
+    TIPOCHAVE chave;
+    struct aux* pai; 
     struct aux* esq; 
     struct aux* dir;
     int cor; // 0: preto | 1: vermelho
@@ -15,466 +15,381 @@ typedef struct {
     ALUNO raiz; // identifica determinado nó como raiz
 } RAIZ;
 
-ALUNO criarNovoAluno(TIPOCHAVE ID) {
-    ALUNO novo = malloc(sizeof(NO));
-    // verificar alocação
-    novo->id = ID;
-    novo->pai = NULL;
-    novo->esq = NULL;
-    novo->dir = NULL;
-    novo->cor = 1; // nós são inicialmente vermelhos 
-
-    return novo;
+void inicializarRB(RAIZ* T) {
+    T->raiz = NULL;
 }
 
-void rotacaoL(RAIZ* Arv, ALUNO p) {
-    ALUNO filhoDir = p->dir;
-
-    p->dir = filhoDir->esq;
-
-    if(filhoDir->esq != NULL) 
-        filhoDir->esq->pai = p;
-    filhoDir->pai = p->pai;
-    
-    if(p->pai == NULL)
-        Arv->raiz = filhoDir;
-    else if(p == p->pai->esq)
-        p->pai->esq = filhoDir;
-    else 
-        p->pai->dir = filhoDir;
-
-    filhoDir->esq = p;
-    p->pai = filhoDir;
+ALUNO criarNovoAluno(TIPOCHAVE ch) {
+    ALUNO novoNo = (ALUNO)malloc(sizeof(NO));
+    novoNo->chave = ch;
+    novoNo->pai = NULL;
+    novoNo->esq = NULL;
+    novoNo->dir = NULL;
+    novoNo->cor = 1; // vermelho por padrão
+    return novoNo;
 }
 
-void rotacaoR(RAIZ* Arv, ALUNO p) {
-    ALUNO filhoEsq = p->esq;
-
-    p->esq = filhoEsq->dir;
-
-    if (filhoEsq->dir != NULL)
-        filhoEsq->dir->pai = p;
-    filhoEsq->pai = p->pai;
-
-    if(p->pai == NULL) //caso seja a raiz 
-        Arv->raiz = filhoEsq; 
-    else if(p == p->pai->dir)
-        p->pai->dir = filhoEsq;
-    else 
-        p->pai->esq = filhoEsq;
-    
-    filhoEsq->dir = p;
-    p->pai = filhoEsq;
+void rotacaoL(RAIZ* T, ALUNO x) {
+    ALUNO y = x->dir;
+    x->dir = y->esq;
+    if(y->esq != NULL)
+        y->esq->pai = x;
+    y->pai = x->pai;
+    if(x->pai == NULL)
+        T->raiz = y;
+    else if(x == x->pai->esq)
+        x->pai->esq = y;
+    else
+        x->pai->dir = y;
+    y->esq = x;
+    x->pai = y;
 }
 
-void balancearArv(RAIZ* Arv, ALUNO p) {
-    // enquanto o pai for vermelho (propriedade 4)
-    while (p != Arv->raiz && p->pai->cor == 1){ 
-        // PONT Pai = p->pai;
-        if(p->pai == p->pai->pai->esq){ // Pai à esquerda
-            ALUNO tio = p->pai->pai->dir;
-            // ================= CASO 1 ESQ ==================
-            // se tio for vermelho
-            if(tio != NULL && tio->cor == 1){ 
-                p->pai->cor = 0; // Pai recebe preto
-                tio->cor = 0; // tio recebe preto
+void rotacaoR(RAIZ* T, ALUNO y) {
+    ALUNO x = y->esq;
+    y->esq = x->dir;
+    if(x->dir != NULL)
+        x->dir->pai = y;
+    x->pai = y->pai;
+    if(y->pai == NULL)
+        T->raiz = x;
+    else if(y == y->pai->dir)
+        y->pai->dir = x;
+    else
+        y->pai->esq = x;
+    x->dir = y;
+    y->pai = x;
+}
 
-                // se avô for raiz recebe preto
-                if(p->pai->pai == Arv->raiz) 
-                    p->pai->pai->cor = 0;
-                // se nao, recebe vermelho
-                else 
-                    p->pai->pai->cor = 1;
-
-                p = p->pai->pai;// p recebe avó para continuar busca
-
-            }else{
-                // ================= CASO 2 ESQ ==================
-                // verifica se p está à direita
-                if(p == p->pai->dir){ 
-                    p = p->pai; // p recebe Pai
-                    rotacaoL(Arv, p); // rotaciona p para à esquerda
+void inserirAlunoFixup(RAIZ* T, ALUNO z) {
+    while(z->pai != NULL && z->pai->cor == 1) {
+        if(z->pai == z->pai->pai->esq) {
+            ALUNO y = z->pai->pai->dir;
+            // CASO 1
+            if(y != NULL && y->cor == 1) {
+                z->pai->cor = 0;
+                y->cor = 0;
+                z->pai->pai->cor = 1;
+                z = z->pai->pai;
+            } else {
+            // CASO 2
+                if(z == z->pai->dir) { // || y->cor != 1
+                    z = z->pai;
+                    rotacaoL(T, z);
                 }
-                // ================= CASO 3 ESQ ==================
-                p->pai->cor = 0; // Pai recebe preto
-                p->pai->pai->cor = 1; // avó recebe vermelho
-                rotacaoR(Arv, p->pai->pai); // rotaciona avó à direita
+            // CASO 3
+                z->pai->cor = 0;
+                z->pai->pai->cor = 1;
+                rotacaoR(T, z->pai->pai);
             }
-        // Mesmos casos porem o pai esta à direita
-        }else{ 
-            ALUNO tio = p->pai->pai->esq;
-            // ================= CASO 1 DIR ==================
-            if(tio != NULL && tio->cor == 1){
-                p->pai->cor = 0;
-                tio->cor = 0;
-                p->pai->pai->cor = 1;
-
-                p = p->pai->pai;
-            }else{
-                // ================= CASO 2 DIR ==================
-                if(p == p->pai->esq){
-                    p = p->pai;
-                    rotacaoR(Arv, p); // rotaciona p à direita
+        // Caso espelho da cláusula anterior
+        } else if((z->pai == z->pai->pai->dir)) {
+            ALUNO y = z->pai->pai->esq;
+            // CASO 1
+            if(y != NULL && y->cor == 1) {
+                z->pai->cor = 0;
+                y->cor = 0;
+                z->pai->pai->cor = 1;
+                z = z->pai->pai;
+            } else {
+            // CASO 2
+                if(z == z->pai->esq) { // || y->cor != 1
+                    z = z->pai;
+                    rotacaoR(T, z);
                 }
-                // ================= CASO 3 DIR ==================
-                p->pai->cor = 0;
-                p->pai->pai->cor = 1;
-                rotacaoL(Arv, p->pai->pai); // rotaciona avó à esquerda
+            // CASO 3
+                z->pai->cor = 0;
+                z->pai->pai->cor = 1;
+                rotacaoL(T, z->pai->pai);
+            }
+        }
+    }
+    T->raiz->cor = 0;
+}
+
+void inserirAluno(RAIZ* T, TIPOCHAVE ch) {
+    ALUNO z = criarNovoAluno(ch);
+    ALUNO y = NULL;
+    ALUNO x = T->raiz;
+    while(x != NULL) {
+        y = x;
+        if(z->chave < x->chave)
+            x = x->esq;
+        else
+            x = x->dir;
+    }
+    z->pai = y;
+    if(y == NULL)
+        T->raiz = z;
+    else if(z->chave < y->chave)
+        y->esq = z;
+    else
+        y->dir = z;
+    z->esq = NULL;
+    z->dir = NULL;
+    z->cor = 1; // Vermelho
+    inserirAlunoFixup(T, z);
+}
+
+void exibirArvoreEmOrdem(ALUNO raiz) {
+    if(raiz != NULL) {
+        exibirArvoreEmOrdem(raiz->esq);
+        printf("%d ", raiz->chave);
+        exibirArvoreEmOrdem(raiz->dir);
+    }
+}
+
+ALUNO buscarAluno(ALUNO x, TIPOCHAVE ch, int *custo) {
+    if(x == NULL || x->chave == ch) {
+        (*custo)++;
+        return x;
+    }
+    (*custo)++;
+    if(ch < x->chave)
+        return buscarAluno(x->esq, ch, custo);
+    return buscarAluno(x->dir, ch, custo);
+}
+
+void removerAlunoFixup(RAIZ* T, ALUNO x) {
+    while(x != T->raiz && x->cor == 0) {
+        if(x == x->pai->esq) {
+            ALUNO w = x->pai->dir;
+            // CASO 1
+            if(w->cor == 1) {
+                w->cor = 0;
+                x->pai->cor = 1;
+                rotacaoL(T, x->pai);
+                w = x->pai->dir;
+            }
+            // CASO 2
+            if(w->esq->cor == 0 &&  w->dir->cor == 0) {
+                w->cor = 1;
+                x = x->pai;
+                //x->pai = x->pai->pai;
+            } else {
+            // CASO 3
+                if(w->dir->cor == 0) {
+                    w->esq->cor = 0;
+                    w->cor = 1;
+                    rotacaoR(T, w);
+                    w = x->pai->dir;
+                }
+            // CASO 4
+                w->cor = x->pai->cor;
+                x->pai->cor = 0;
+                w->dir->cor = 0;
+                rotacaoL(T, x->pai);
+                x = T->raiz;
+            }
+        
+        } else {
+        // Caso espelho da cláusula anterior
+            ALUNO w = x->pai->esq; 
+            // CASO 1
+            if(w->cor == 1) {
+                w->cor = 0;
+                x->pai->cor = 1;
+                rotacaoR(T, x->pai);
+                w = x->pai->esq;
+            }
+            // CASO 2
+            if(w->dir->cor == 0 &&  w->esq->cor == 0) {
+                w->cor = 1;
+                x = x->pai;
+                //x->pai = x->pai->pai;
+            } else {
+            // CASO 3
+                if(w->esq->cor == 0) {
+                    w->dir->cor = 0;
+                    w->cor = 1;
+                    rotacaoL(T, w);
+                    w = x->pai->esq;
+                }
+            // CASO 4
+                w->cor = x->pai->cor;
+                x->pai->cor = 0;
+                w->esq->cor = 0;
+                rotacaoR(T, x->pai);
+                x = T->raiz;
             }
         }
 
     }
-    Arv->raiz->cor = 0; // Define raiz como preta (Sempre)
+    x->cor = 0;
+    while(T->raiz->pai != NULL)
+        T->raiz = T->raiz->pai;
 }
 
-void inserirAluno(RAIZ* Arv, TIPOCHAVE ID) {
-    // Cria o novo nó que será inserido
-    ALUNO novo = criarNovoAluno(ID);
+ALUNO minimo(ALUNO x) {
+    while(x->esq != NULL)
+        x = x->esq;
+    return x;
+}
 
-    ALUNO pai = NULL; // declara nó pai que será usado nas comparações
-    ALUNO atual = Arv->raiz; // "atual" é o ponteiro que percorrerá a árvore
+ALUNO sucessor(ALUNO x) {
+    if(x->dir != NULL)
+        return minimo(x->dir);
 
-    // busca local que será inserido o novo nó (igual ABB)
-    while(atual != NULL) { // ponto de parada (chegou ao fim da árvore)
-        pai = atual;
-        if(ID < atual->id)
-            atual = atual->esq;
-        else if(ID > atual->id) 
-            atual = atual->dir;
-        else{
-            printf("Chave %d ja se encontra na arvore!\n", ID);
-            return;
-        }
-
+    ALUNO y = x->pai;
+    while(y != NULL && x == y->dir) {
+        x = y;
+        y = y->pai;
     }
-    // atual agora é igual a NULL
-    // pai é igual ao pai de atual
-    novo->pai = pai;
+    return y;
+}
+
+
+void removerAluno(RAIZ* T, TIPOCHAVE ch) {
+    int custo = 0;
+    ALUNO z = buscarAluno(T->raiz, ch, &custo);
+    if(z == NULL)
+        return;
+
+    ALUNO y, x;
+    if(z->esq == NULL || z->dir == NULL)
+        y = z; // Caso 1
+    else
+        y = sucessor(z); // Caso 2
+
+    if(y->esq != NULL)
+        x = y->esq;
+    else
+        x = y->dir;
+
+    if(x != NULL)
+        x->pai = y->pai; // Faça isso, mesmo se x for NULL
     
-    if(pai == NULL){ // árvore vazia
-        Arv->raiz = novo; // raiz recebe o novo nó
-        novo->cor = 0; // raiz é preta
+    if(y->pai == NULL)
+        T->raiz = x;
+    else if (y == y->pai->esq)
+        y->pai->esq = x;
+    else
+        y->pai->dir = x;
 
-    }else{ // se não, existe árvore
-        if(ID < pai->id) 
-            pai->esq = novo;
-        else 
-            pai->dir = novo;
-    }
-    // verifica as rotações e colorações necessárias para manter o balanceamento
-    balancearArv(Arv, novo);
-}
+    if(y != z)
+        z->chave = y->chave;
 
-void exibirArvoreEmOrdem(ALUNO p) {
-    if(p != NULL){
-        exibirArvoreEmOrdem(p->esq);
-        printf("%d ", p->id);
-        exibirArvoreEmOrdem(p->dir);
-    }
+    if(y->cor == 0 && x != NULL)
+        removerAlunoFixup(T, x);
+
+    free(y);
 }
 
 int max(int a, int b) {
     return (a > b) ? a : b;
 }
 
-int alturaTotal(ALUNO p) {
-    if(p == NULL) 
+int alturaTotal(ALUNO x) {
+    if(x == NULL) 
         return -1; // nó nulo tem altura -1
     
-    int alturaEsq = alturaTotal(p->esq);
-    int alturaDir = alturaTotal(p->dir);
+    int alturaEsq = alturaTotal(x->esq);
+    int alturaDir = alturaTotal(x->dir);
     
     return 1 + max(alturaEsq, alturaDir);
 }
 
-int buscarAluno(ALUNO raiz, TIPOCHAVE ID, int *custo) {
-    // árvore vazia
-    if(raiz == NULL)
-        return 0; 
+void destruirAux(ALUNO x) {
+    if(x != NULL){
+        destruirAux(x->esq); 
+        destruirAux(x->dir); 
 
-    int comparacoes = 0; // contador de comparações
-    ALUNO atual = raiz;
-    // percorre árvore
-    while(atual != NULL){
-        comparacoes++; // incrementa o contador
-
-        // aluno encontrado
-        if(atual->id == ID) {
-            *custo = comparacoes;
-            return 1; // retorna 1 se achou
-        }
-    
-        // se menor, busca pela esquerda
-        else if(ID < atual->id) 
-            atual = atual->esq;
-        // se maior, busca pela direita
-        else 
-            atual = atual->dir;
-    
-    }
-
-    *custo = comparacoes;
-    // retorna 0 se nao achou
-    return 0;
-}
-
-void verificaNoPreto(RAIZ* Arv, RAIZ* pontArv, ALUNO removido, ALUNO paiRemovido) {
-    ALUNO irmao;
-
-    // Se o nó removido nao ser a raiz
-    if((removido->pai != NULL)){
-        // se removido for nó da esquerda
-        if(removido == paiRemovido->esq){
-            irmao = paiRemovido->dir; // irmao de removido (o que queremos deletar)
-
-            // se o irmao for vermelho
-            if(irmao->cor == 1){ 
-                irmao->cor = 0; // irmao fica preto
-                paiRemovido->cor = 1; // pai fica vermelho
-                rotacaoL(pontArv, paiRemovido); // rotaciona 
-                irmao = paiRemovido->dir; // irmao fica à direira do pai
-            }
-            // se não houver sobrinho à esquerda nem à direita ou se eles forem pretos
-            if((irmao->esq == NULL || irmao->esq->cor == 0) && (irmao->dir == NULL || irmao->dir->cor == 0)){
-                irmao->cor = 1; // muda cor do irmao (vermelho)
-                removido = paiRemovido;
-                paiRemovido = removido->pai; // paiRemovido recebe ávo de removido
-            }else{
-                // se o irmao for nulo ou preto
-                if(irmao->dir == NULL || irmao->dir->cor == 0){
-                    irmao->esq->cor = 0; // sobrinho esquerdo fica preto
-                    irmao->cor = 1; // irmao fica vermelho
-                    rotacaoR(pontArv, irmao); // rotaciona irmao para à direita
-                    irmao = paiRemovido->dir; // irmao fica a direita do pai
-                }
-
-                irmao->cor = paiRemovido->cor; // irmao descende cor do pai
-                paiRemovido->cor = 0; // pai fica preto
-                irmao->dir->cor = 0; // sobrinho à direita fica preto
-                rotacaoL(pontArv, paiRemovido); // pai rotaciona à esquerda
-                removido = Arv->raiz; // removido vira raiz
-            }
-
-        // se removido for nó da direita
-        }else{
-            irmao = paiRemovido->esq; // irmao é nó da esquerda
-
-            // se irmao for vermelho
-            if(irmao->cor == 1){
-                irmao->cor = 0; // irmao muda para preto
-                paiRemovido->cor = 1; // pai fica vermelho
-                rotacaoR(pontArv, paiRemovido); // rotaciona pai à direita
-                irmao = paiRemovido->esq; // atualiza irmao após rotação
-            }
-
-            //se não houver sobrinho à esquerda nem á direita ou se eles forem pretos
-            if((irmao->dir == NULL || irmao->dir->cor == 0) && (irmao->esq == NULL || irmao->esq->cor == 0)){
-                // mesmos passos do anterior (inverte lado das rotações)
-                irmao->cor = 1; 
-                removido = paiRemovido;
-                paiRemovido = removido->pai;
-            }else{
-                if(irmao->esq == NULL || irmao->esq->cor == 0){
-                    irmao->dir->cor = 0;
-                    irmao->cor = 1;
-                    rotacaoL(pontArv, irmao);
-                    irmao = paiRemovido->esq;
-                }
-
-                irmao->cor = paiRemovido->cor;
-                paiRemovido->cor = 0;
-                irmao->esq->cor = 0;
-                rotacaoR(pontArv, paiRemovido);
-                removido = Arv->raiz;
-            }
-        }
-
-    }
-    //se o nó removido não for NULL ele fica preto
-    if(removido != NULL)
-        removido->cor = 0;
-    
-    // após isso ocorrerá a remoção real do nó
-}
-
-void removerAluno(RAIZ* Arv, RAIZ* pontArv, TIPOCHAVE ID) {
-    // "atual" ponteiro que percorrerá a árvore
-    ALUNO atual = Arv->raiz;
-
-    // caso atual seja o último nó da árvore
-    if((atual == pontArv->raiz) && (!atual->dir) && (!atual->esq)){
-        free(atual);
-        pontArv->raiz = NULL;
-        return;
-    }
-
-    //Se atual == NULL chegou ao fim da árvore
-    while (atual != NULL && atual->id != ID) {
-        if(ID < atual->id)
-            atual = atual->esq;
-        else 
-            atual = atual->dir;
-    }
-
-    // se atual == NULL a chave não existe na árvore
-    if(!atual){
-        printf("\nAluno nao encontrado!\n");
-        return;
-    }
-
-    // se for nó folha
-    if((atual->dir == NULL) && (atual->esq == NULL)){
-        // se remover uma folha preta precisa corrigir
-        if(atual->cor == 0)
-            verificaNoPreto(Arv, pontArv, atual, atual->pai);
-        
-        if(atual->pai->esq == atual) // zera os ponteiros do pai
-            atual->pai->esq = NULL;
-        else 
-            atual->pai->dir = NULL;
-
-        free(atual); // caso seja uma folha 
-
-    // se tiver algum filho
-    }else if((atual->dir != NULL) || (atual->esq != NULL)){
-        ALUNO aux;
-
-        // aux recebe o filho que existir
-        if(atual->dir) 
-            aux = atual->dir;
-        else 
-            aux = atual->esq;
-
-        // procura o menor nó da parte direita
-        while(aux->esq != NULL)
-            aux = aux->esq; 
-
-        // valor a ser deletado recebe menor valor à direita
-        atual->id = aux->id; 
-        aux->id = ID; // aux recebe o valor a ser deletado
-
-        RAIZ auxArv;
-        // aux recebe o nó que existir
-        if(atual->dir) 
-            auxArv.raiz = atual->dir;
-        else 
-            auxArv.raiz = atual->esq;
-
-        removerAluno(&auxArv, pontArv, ID);
-    }
-
-}
-
-void inicializarRB(RAIZ* Arv) {
-    Arv->raiz = NULL;
-}
-
-void destruirAux(ALUNO p) {
-    if(p != NULL){
-        // percorre nós filhos
-        destruirAux(p->esq); 
-        destruirAux(p->dir); 
-
-        // libera nó atual
-        free(p); 
+        free(x); 
     }
 }
 
-void destruirArvoreRB(RAIZ* Arv) {
+void destruirArvoreRB(RAIZ* T) {
     // libera todos os nós da árvore
-    destruirAux(Arv->raiz); 
+    destruirAux(T->raiz); 
 
     // define raiz como NULL
-    Arv->raiz = NULL; 
+    T->raiz = NULL; 
 }
 
-void calcularAlturaNegraAux(ALUNO p, int altAtual, int *altNegra) {
-    if(p == NULL){
+void alturaNegraAux(ALUNO x, int altAtual, int *altNegra) {
+    if(x == NULL) {
         if(*altNegra == -1 || altAtual < *altNegra)
             *altNegra = altAtual;
-        
         return;
     }
     
-    if(p->cor == 0) // Nó preto
+    if(x->cor == 0) // Nó preto
         altAtual++;
     
-    calcularAlturaNegraAux(p->esq, altAtual, altNegra);
-    calcularAlturaNegraAux(p->dir, altAtual, altNegra);
+    alturaNegraAux(x->esq, altAtual, altNegra);
+    alturaNegraAux(x->dir, altAtual, altNegra);
 }
 
-int alturaNegra(RAIZ *Arv) {
-    if(Arv == NULL || Arv->raiz == NULL) 
+int alturaNegra(RAIZ *T) {
+    if(T == NULL || T->raiz == NULL) 
         return -1;
     
     int altNegra = -1;
-    calcularAlturaNegraAux(Arv->raiz, 0, &altNegra);
+    alturaNegraAux(T->raiz, 0, &altNegra);
 
     return altNegra;
 }
 
-void contarNos(ALUNO raiz, int *vermelhos, int *pretos) {
-    if(raiz == NULL)
+void contarNos(ALUNO x, int *rubro, int *preto) {
+    if(x == NULL)
         return;
 
-    if(raiz->cor == 1)
-        (*vermelhos)++;
+    if(x->cor == 1)
+        (*rubro)++;
     else
-        (*pretos)++;
+        (*preto)++;
 
-    // busca e conta nas subárvores
-    contarNos(raiz->esq, vermelhos, pretos);
-    contarNos(raiz->dir, vermelhos, pretos);
+    contarNos(x->esq, rubro, preto);
+    contarNos(x->dir, rubro, preto);
 }
 
-void calcularPorcentagemNo(ALUNO raiz) {
-    // árvore vazia
-    if(raiz == NULL)
+void calcularPorcentagem(ALUNO x) {
+    if(x == NULL)
         return;
 
     int rubro = 0;
     int negro = 0;
 
-    contarNos(raiz, &rubro, &negro);
+    contarNos(x, &rubro, &negro);
 
     int total = rubro + negro;
 
     float percentRubro = (float)rubro / total * 100;
     float percentNegro = (float)negro / total * 100;
 
-    printf("\nNos rubros: %.2f%%\nNos negros: %.2f%%\n", percentRubro, percentNegro);
+    printf("\nRubros: %.2f%%\nNegros: %.2f%%\n", percentRubro, percentNegro);
 }
 
-void ligarNo(RAIZ* Cabeca, char* nome, FILE* fdot) {
-    if(Cabeca->raiz == NULL) 
+void ligarNo(RAIZ* T, char* nome, FILE* fdot) {
+    if(T->raiz == NULL) 
         return;
-    ALUNO Arv = Cabeca->raiz;
+    ALUNO arvore = T->raiz;
 
     fdot = fopen(nome, "a+");
-    fprintf(fdot, "\n\t\t\"%d\\ncor:%d\"", Arv->id, Arv->cor);
+    fprintf(fdot, "\n\t\t\"%d\\ncor:%d\"", arvore->chave, arvore->cor);
 
-    if(Arv->esq != NULL){
-        fprintf(fdot, "\n\t\t\"%d\\ncor:%d\" -> \"%d\\ncor:%d\"\n", Arv->id, Arv->cor, Arv->esq->id, Arv->esq->cor);
-        if (Arv->esq->cor == 0) // cor = 0 é preto
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", Arv->esq->id, Arv->esq->cor);
+    if(arvore->esq != NULL) {
+        fprintf(fdot, "\n\t\t\"%d\\ncor:%d\" -> \"%d\\ncor:%d\"\n", arvore->chave, arvore->cor, arvore->esq->chave, arvore->esq->cor);
+        if(arvore->esq->cor == 0) // cor = 0 é preto
+            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", arvore->esq->chave, arvore->esq->cor);
         else // cor = 1 é vermelho
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", Arv->esq->id, Arv->esq->cor);
+            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", arvore->esq->chave, arvore->esq->cor);
 
         RAIZ aux;
-        aux.raiz = Arv->esq;
+        aux.raiz = arvore->esq;
 
         ligarNo(&aux, nome, fdot);
     }
 
-    if(Arv->dir != NULL){
-        fprintf(fdot, "\n\t\t\"%d\\ncor:%d\" -> \"%d\\ncor:%d\"\n", Arv->id, Arv->cor, Arv->dir->id, Arv->dir->cor);
-        if (Arv->dir->cor == 0) // cor = 0 é preto
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", Arv->dir->id, Arv->dir->cor);
+    if(arvore->dir != NULL) {
+        fprintf(fdot, "\n\t\t\"%d\\ncor:%d\" -> \"%d\\ncor:%d\"\n", arvore->chave, arvore->cor, arvore->dir->chave, arvore->dir->cor);
+        if(arvore->dir->cor == 0) // cor = 0 é preto
+            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", arvore->dir->chave, arvore->dir->cor);
         else // cor = 1 é vermelho
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", Arv->dir->id, Arv->dir->cor);
+            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", arvore->dir->chave, arvore->dir->cor);
 
         RAIZ aux;
-        aux.raiz = Arv->dir;
+        aux.raiz = arvore->dir;
 
         ligarNo(&aux, nome, fdot);
     }
@@ -488,7 +403,6 @@ FILE* inicializarDot(char* fn) {
     fprintf(fdot, "\tdigraph BlackRedTree {\n");
     fprintf(fdot, "\tnode [shape=circle];\n");
     fclose(fdot);
-
     return fdot;
 }
 
@@ -499,45 +413,50 @@ void terminarDot(char* fn) {
     fclose(fdot);
 }
 
-int main(){
+int main() {
+    RAIZ arvore;
+    inicializarRB(&arvore);
 
-    RAIZ Arv;
-    inicializarRB(&Arv);
+    inserirAluno(&arvore, 10);
+    inserirAluno(&arvore, 20);
+    inserirAluno(&arvore, 30);
+    inserirAluno(&arvore, 40);
+    inserirAluno(&arvore, 50);
+    inserirAluno(&arvore, 9);
+    inserirAluno(&arvore, 8);
+    inserirAluno(&arvore, 6);
+    inserirAluno(&arvore, 7);
+    inserirAluno(&arvore, 5);
+    inserirAluno(&arvore, 60);
 
-    inserirAluno(&Arv, 10);
-    inserirAluno(&Arv, 20);
-    inserirAluno(&Arv, 30);
-    inserirAluno(&Arv, 40);
-    inserirAluno(&Arv, 50);
-    //inserirAluno(&Arv, 20); // nó já inserido
-    inserirAluno(&Arv, 9);
-    inserirAluno(&Arv, 8);
-    inserirAluno(&Arv, 6);
-    inserirAluno(&Arv, 7);
-    inserirAluno(&Arv, 5);
-    inserirAluno(&Arv, 60);
+    /* for(int i=0; i < 20; i++){
+        inserirAluno(&arvore, criarNovoAluno(i));
+    } */
 
-    removerAluno(&Arv, &Arv, 20);
-    removerAluno(&Arv, &Arv, 9);
-    removerAluno(&Arv, &Arv, 50);
-    //removerAluno(&Arv, &Arv, 40);
+    removerAluno(&arvore, 20);
+    removerAluno(&arvore, 9);
+    removerAluno(&arvore, 50);
+    removerAluno(&arvore, 30); 
 
-    // impressão ARB em ordem
-    printf("\nArvore Rubro-Negra em ordem:\n");
-    exibirArvoreEmOrdem(Arv.raiz);
+    printf("Arvore Rubro-Negra em ordem:\n");
+    exibirArvoreEmOrdem(arvore.raiz);
     printf("\n");
-    
-    printf("\nAltura total da arvore: %d\n", alturaTotal(Arv.raiz));
-    printf("Altura Negra da arvore: %d\n", alturaNegra(&Arv));
 
-    calcularPorcentagemNo(Arv.raiz);
+    int custo = 0;
+    ALUNO busca = buscarAluno(arvore.raiz, 60, &custo);
+    printf(busca != NULL ? "\nAluno encontrado!\nComparacoes: %d\n" : "\nAluno nao encontrado!\nComparacoes: %d\n", custo);
+
+    printf("\nAltura total da arvore: %d\n", alturaTotal(arvore.raiz));
+    printf("Altura Negra da arvore: %d\n", alturaNegra(&arvore));
+
+    calcularPorcentagem(arvore.raiz);
 
     FILE* ArqDot = inicializarDot("arvore.dot");
-    ligarNo(&Arv, "arvore.dot", ArqDot);
+    ligarNo(&arvore, "arvore.dot", ArqDot);
     terminarDot("arvore.dot");
 
     // libera memória alocada para a árvore (remove todos os nós)
-    destruirArvoreRB(&Arv);
+    destruirArvoreRB(&arvore);
 
     return 0;
 }
