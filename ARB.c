@@ -429,10 +429,6 @@ int main() {
     inserirAluno(&arvore, 5);
     inserirAluno(&arvore, 60);
 
-    /* for(int i=0; i < 20; i++){
-        inserirAluno(&arvore, criarNovoAluno(i));
-    } */
-
     removerAluno(&arvore, 20);
     removerAluno(&arvore, 9);
     removerAluno(&arvore, 50);
