@@ -360,41 +360,42 @@ void calcularPorcentagem(ALUNO x) {
     printf("\nRubros: %.2f%%\nNegros: %.2f%%\n", percentRubro, percentNegro);
 }
 
-void ligarNo(RAIZ* T, char* nome, FILE* fdot) {
+void ligarNo(RAIZ* T, FILE* fdot) {
     if(T->raiz == NULL) 
         return;
     ALUNO arvore = T->raiz;
 
-    fdot = fopen(nome, "a+");
-    fprintf(fdot, "\n\t\t\"%d\\ncor:%d\"", arvore->chave, arvore->cor);
+    if(arvore->cor == 0) // cor = 0 é preto
+        fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", arvore->chave, arvore->cor);
+    else // cor = 1 é vermelho
+        fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", arvore->chave, arvore->cor);
 
     if(arvore->esq != NULL) {
         fprintf(fdot, "\n\t\t\"%d\\ncor:%d\" -> \"%d\\ncor:%d\"\n", arvore->chave, arvore->cor, arvore->esq->chave, arvore->esq->cor);
         if(arvore->esq->cor == 0) // cor = 0 é preto
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", arvore->esq->chave, arvore->esq->cor);
+            fprintf(fdot, "\t\t\"%d\\ncor:%d\"\n", arvore->esq->chave, arvore->esq->cor);
         else // cor = 1 é vermelho
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", arvore->esq->chave, arvore->esq->cor);
+            fprintf(fdot, "\t\t\"%d\\ncor:%d\"\n", arvore->esq->chave, arvore->esq->cor);
 
         RAIZ aux;
         aux.raiz = arvore->esq;
 
-        ligarNo(&aux, nome, fdot);
+        ligarNo(&aux, fdot);
     }
 
     if(arvore->dir != NULL) {
         fprintf(fdot, "\n\t\t\"%d\\ncor:%d\" -> \"%d\\ncor:%d\"\n", arvore->chave, arvore->cor, arvore->dir->chave, arvore->dir->cor);
         if(arvore->dir->cor == 0) // cor = 0 é preto
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", arvore->dir->chave, arvore->dir->cor);
+            fprintf(fdot, "\t\t\"%d\\ncor:%d\"\n", arvore->dir->chave, arvore->dir->cor);
         else // cor = 1 é vermelho
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", arvore->dir->chave, arvore->dir->cor);
+            fprintf(fdot, "\t\t\"%d\\ncor:%d\"\n", arvore->dir->chave, arvore->dir->cor);
 
         RAIZ aux;
         aux.raiz = arvore->dir;
 
-        ligarNo(&aux, nome, fdot);
+        ligarNo(&aux, fdot);
     }
 
-    fclose(fdot);
 }
 
 FILE* inicializarDot(char* fn) {
@@ -402,16 +403,13 @@ FILE* inicializarDot(char* fn) {
 
     fprintf(fdot, "\tdigraph BlackRedTree {\n");
     fprintf(fdot, "\tnode [shape=circle];\n");
-    fclose(fdot);
     return fdot;
 }
 
-void terminarDot(char* fn) {
-    FILE* fdot = fopen(fn,"a+");
-
+void terminarDot(FILE* fdot) {
     fprintf(fdot,"\n\t}");
     fclose(fdot);
-}
+} 
 
 int main() {
     RAIZ arvore;
@@ -427,12 +425,18 @@ int main() {
     inserirAluno(&arvore, 6);
     inserirAluno(&arvore, 7);
     inserirAluno(&arvore, 5);
-    inserirAluno(&arvore, 60);
+    inserirAluno(&arvore, 60);  
 
-    removerAluno(&arvore, 20);
-    removerAluno(&arvore, 9);
-    removerAluno(&arvore, 50);
-    removerAluno(&arvore, 30); 
+    /* for(int i=0; i < 200; i++)
+        inserirAluno(&arvore, i);
+    
+    for(int i=0; i < 180; i++)
+        removerAluno(&arvore, i);  */
+
+    //removerAluno(&arvore, 20);
+    //removerAluno(&arvore, 9);
+    //removerAluno(&arvore, 50);
+    //removerAluno(&arvore, 30); 
 
     printf("Arvore Rubro-Negra em ordem:\n");
     exibirArvoreEmOrdem(arvore.raiz);
@@ -447,9 +451,9 @@ int main() {
 
     calcularPorcentagem(arvore.raiz);
 
-    FILE* ArqDot = inicializarDot("arvore.dot");
-    ligarNo(&arvore, "arvore.dot", ArqDot);
-    terminarDot("arvore.dot");
+    FILE* fdot = inicializarDot("arvore.dot");
+    ligarNo(&arvore, fdot);
+    terminarDot(fdot);
 
     // libera memória alocada para a árvore (remove todos os nós)
     destruirArvoreRB(&arvore);
