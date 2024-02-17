@@ -359,7 +359,7 @@ void percorrerAVL(FILE* ArqDot, PONT raiz, int nivel) {
 
 // gera dot da arvore AVL
 void imprimirAVL(PONT raiz) {
-    FILE *ArqDot = fopen("ArqDot.dot", "w");
+    FILE *ArqDot = fopen("arvore.dot", "w");
     inicializarDot(ArqDot);
     ligarNo(ArqDot, NULL, raiz);
 
