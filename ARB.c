@@ -4,7 +4,7 @@
 typedef int TIPOCHAVE;
 
 typedef struct aux {
-    TIPOCHAVE chave;
+    TIPOCHAVE id;
     struct aux* pai; 
     struct aux* esq; 
     struct aux* dir;
@@ -19,9 +19,9 @@ void inicializarRB(RAIZ* T) {
     T->raiz = NULL;
 }
 
-ALUNO criarNovoAluno(TIPOCHAVE ch) {
+ALUNO criarNovoAluno(TIPOCHAVE ID) {
     ALUNO novoNo = (ALUNO)malloc(sizeof(NO));
-    novoNo->chave = ch;
+    novoNo->id = ID;
     novoNo->pai = NULL;
     novoNo->esq = NULL;
     novoNo->dir = NULL;
@@ -107,13 +107,13 @@ void inserirAlunoFixup(RAIZ* T, ALUNO z) {
     T->raiz->cor = 0;
 }
 
-void inserirAluno(RAIZ* T, TIPOCHAVE ch) {
-    ALUNO z = criarNovoAluno(ch);
+void inserirAluno(RAIZ* T, TIPOCHAVE ID) {
+    ALUNO z = criarNovoAluno(ID);
     ALUNO y = NULL;
     ALUNO x = T->raiz;
     while(x != NULL) {
         y = x;
-        if(z->chave < x->chave)
+        if(z->id < x->id)
             x = x->esq;
         else
             x = x->dir;
@@ -121,7 +121,7 @@ void inserirAluno(RAIZ* T, TIPOCHAVE ch) {
     z->pai = y;
     if(y == NULL)
         T->raiz = z;
-    else if(z->chave < y->chave)
+    else if(z->id < y->id)
         y->esq = z;
     else
         y->dir = z;
@@ -131,23 +131,23 @@ void inserirAluno(RAIZ* T, TIPOCHAVE ch) {
     inserirAlunoFixup(T, z);
 }
 
-void exibirArvoreEmOrdem(ALUNO raiz) {
-    if(raiz != NULL) {
-        exibirArvoreEmOrdem(raiz->esq);
-        printf("%d ", raiz->chave);
-        exibirArvoreEmOrdem(raiz->dir);
+void exibirArvoreEmOrdem(ALUNO x) {
+    if(x != NULL) {
+        exibirArvoreEmOrdem(x->esq);
+        printf("%04d ", x->id);
+        exibirArvoreEmOrdem(x->dir);
     }
 }
 
-ALUNO buscarAluno(ALUNO x, TIPOCHAVE ch, int *custo) {
-    if(x == NULL || x->chave == ch) {
+ALUNO buscarAluno(ALUNO x, TIPOCHAVE ID, int *custo) {
+    if(x == NULL || x->id == ID) {
         (*custo)++;
         return x;
     }
     (*custo)++;
-    if(ch < x->chave)
-        return buscarAluno(x->esq, ch, custo);
-    return buscarAluno(x->dir, ch, custo);
+    if(ID < x->id)
+        return buscarAluno(x->esq, ID, custo);
+    return buscarAluno(x->dir, ID, custo);
 }
 
 void removerAlunoFixup(RAIZ* T, ALUNO x) {
@@ -239,9 +239,9 @@ ALUNO sucessor(ALUNO x) {
 }
 
 
-void removerAluno(RAIZ* T, TIPOCHAVE ch) {
+void removerAluno(RAIZ* T, TIPOCHAVE ID) {
     int custo = 0;
-    ALUNO z = buscarAluno(T->raiz, ch, &custo);
+    ALUNO z = buscarAluno(T->raiz, ID, &custo);
     if(z == NULL)
         return;
 
@@ -267,7 +267,7 @@ void removerAluno(RAIZ* T, TIPOCHAVE ch) {
         y->pai->dir = x;
 
     if(y != z)
-        z->chave = y->chave;
+        z->id = y->id;
 
     if(y->cor == 0 && x != NULL)
         removerAlunoFixup(T, x);
@@ -366,16 +366,16 @@ void ligarNo(RAIZ* T, FILE* fdot) {
     ALUNO arvore = T->raiz;
 
     if(arvore->cor == 0) // cor = 0 é preto
-        fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", arvore->chave, arvore->cor);
+        fprintf(fdot, "\t\t\"%04d\\ncor:%d\"  [style=filled, fillcolor=black, fontcolor=white];\n", arvore->id, arvore->cor);
     else // cor = 1 é vermelho
-        fprintf(fdot, "\t\t\"%d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", arvore->chave, arvore->cor);
+        fprintf(fdot, "\t\t\"%04d\\ncor:%d\"  [style=filled, fillcolor=red, fontcolor=black];\n", arvore->id, arvore->cor);
 
     if(arvore->esq != NULL) {
-        fprintf(fdot, "\n\t\t\"%d\\ncor:%d\" -> \"%d\\ncor:%d\"\n", arvore->chave, arvore->cor, arvore->esq->chave, arvore->esq->cor);
+        fprintf(fdot, "\n\t\t\"%04d\\ncor:%d\" -> \"%04d\\ncor:%d\"\n", arvore->id, arvore->cor, arvore->esq->id, arvore->esq->cor);
         if(arvore->esq->cor == 0) // cor = 0 é preto
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"\n", arvore->esq->chave, arvore->esq->cor);
+            fprintf(fdot, "\t\t\"%04d\\ncor:%d\"\n", arvore->esq->id, arvore->esq->cor);
         else // cor = 1 é vermelho
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"\n", arvore->esq->chave, arvore->esq->cor);
+            fprintf(fdot, "\t\t\"%04d\\ncor:%d\"\n", arvore->esq->id, arvore->esq->cor);
 
         RAIZ aux;
         aux.raiz = arvore->esq;
@@ -384,11 +384,11 @@ void ligarNo(RAIZ* T, FILE* fdot) {
     }
 
     if(arvore->dir != NULL) {
-        fprintf(fdot, "\n\t\t\"%d\\ncor:%d\" -> \"%d\\ncor:%d\"\n", arvore->chave, arvore->cor, arvore->dir->chave, arvore->dir->cor);
+        fprintf(fdot, "\n\t\t\"%04d\\ncor:%d\" -> \"%04d\\ncor:%d\"\n", arvore->id, arvore->cor, arvore->dir->id, arvore->dir->cor);
         if(arvore->dir->cor == 0) // cor = 0 é preto
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"\n", arvore->dir->chave, arvore->dir->cor);
+            fprintf(fdot, "\t\t\"%04d\\ncor:%d\"\n", arvore->dir->id, arvore->dir->cor);
         else // cor = 1 é vermelho
-            fprintf(fdot, "\t\t\"%d\\ncor:%d\"\n", arvore->dir->chave, arvore->dir->cor);
+            fprintf(fdot, "\t\t\"%04d\\ncor:%d\"\n", arvore->dir->id, arvore->dir->cor);
 
         RAIZ aux;
         aux.raiz = arvore->dir;
@@ -415,7 +415,7 @@ int main() {
     RAIZ arvore;
     inicializarRB(&arvore);
 
-    inserirAluno(&arvore, 10);
+    /* inserirAluno(&arvore, 10);
     inserirAluno(&arvore, 20);
     inserirAluno(&arvore, 30);
     inserirAluno(&arvore, 40);
@@ -425,13 +425,13 @@ int main() {
     inserirAluno(&arvore, 6);
     inserirAluno(&arvore, 7);
     inserirAluno(&arvore, 5);
-    inserirAluno(&arvore, 60);  
+    inserirAluno(&arvore, 60); */
 
-    /* for(int i=0; i < 200; i++)
+    for(int i=0; i < 100; i++)
         inserirAluno(&arvore, i);
     
-    for(int i=0; i < 180; i++)
-        removerAluno(&arvore, i);  */
+    for(int i=0; i < 88; i++)
+        removerAluno(&arvore, i);  
 
     //removerAluno(&arvore, 20);
     //removerAluno(&arvore, 9);
@@ -442,9 +442,9 @@ int main() {
     exibirArvoreEmOrdem(arvore.raiz);
     printf("\n");
 
-    int custo = 0;
-    ALUNO busca = buscarAluno(arvore.raiz, 60, &custo);
-    printf(busca != NULL ? "\nAluno encontrado!\nComparacoes: %d\n" : "\nAluno nao encontrado!\nComparacoes: %d\n", custo);
+    //int custo = 0;
+    //ALUNO busca = buscarAluno(arvore.raiz, 60, &custo); (escolher valor para buscar)
+    //printf(busca != NULL ? "\nAluno encontrado!\nComparacoes: %d\n" : "\nAluno nao encontrado!\nComparacoes: %d\n", custo);
 
     printf("\nAltura total da arvore: %d\n", alturaTotal(arvore.raiz));
     printf("Altura Negra da arvore: %d\n", alturaNegra(&arvore));
