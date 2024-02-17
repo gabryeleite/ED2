@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 typedef int TIPOCHAVE;
 
@@ -85,35 +84,34 @@ nova raiz da subárvore originalmente iniciada por p */
 PONT rotacaoL(PONT p) {
     // p é o nó com fator de balanceamento "-2" (pende à esquerda)
     PONT u = p->esq;
-    
-    // rotação simples esquerda (LL)
-    if(u->bal == -1){
-        p->esq = u->dir; // adota filho u
-        u->dir = p; // u vira nova raiz e p seu filho direito
-        p->bal = 0; // atualiza fator de balanceamento
-        u->bal = 0;
-
-        return u;
-    }
 
     // rotação à esquerda e à direita (LR)
     if(u->bal == 1){
-        PONT v = u->dir; 
-        u->dir = v->esq;
-        v->esq = u;
-        p->esq = v->dir;
-        v->dir = p;
+    PONT v = u->dir; 
+    u->dir = v->esq;
+    v->esq = u;
+    p->esq = v->dir;
+    v->dir = p;
 
-        if(v->bal == -1) p->bal = -1;
-        else p->bal = 0;
+    if(v->bal == -1) p->bal = -1;
+    else p->bal = 0;
 
-        if(v->bal == 1) u->bal = -1;
-        else u->bal = 0;
+    if(v->bal == 1) u->bal = -1;
+    else u->bal = 0;
 
-        v->bal = 0;
-        return v;
+    v->bal = 0;
+
+    return v;
     }
-    
+    // rotação simples esquerda (LL)
+    //if(u->bal == -1){
+    p->esq = u->dir; // adota filho u
+    u->dir = p; // u vira nova raiz e p seu filho direito
+    p->bal = 0; // atualiza fator de balanceamento
+    u->bal = 0;
+
+    return u;
+    //}
 }
 
 /* Rotações à esquerda (RR e RL) Retornará o endereço do nó que será a
@@ -121,38 +119,53 @@ nova raiz da subárvore originalmente iniciada por p */
 PONT rotacaoR(PONT p) {
     // p é o nó com fator de balanceamento "2" (pende à direita)
     PONT u = p->dir;
-    
-    // rotação simples esquerda (RR)
-    if(u->bal == 1){
-        p->dir = u->esq; // adota filho u
-        u->esq = p; // u vira nova raiz e p seu filho esquerdo
-        p->bal = 0; // atualiza fator de balanceamento
-        u->bal = 0;
-
-        return u;
-    }
 
     // rotação à direita e à esquerda (LR)
     if(u->bal == -1){
-        PONT v = u->esq; 
-        u->esq = v->dir;
-        v->dir = u;
-        p->dir = v->esq;
-        v->esq = p;
+    PONT v = u->esq; 
+    u->esq = v->dir;
+    v->dir = u;
+    p->dir = v->esq;
+    v->esq = p;
 
-        if(v->bal == 1) p->bal = 1;
-        else p->bal = 0;
+    if(v->bal == 1) p->bal = 1;
+    else p->bal = 0;
 
-        if(v->bal == -1) u->bal = 1;
-        else u->bal = 0;
+    if(v->bal == -1) u->bal = 1;
+    else u->bal = 0;
 
-        v->bal = 0;
-        return v;
-    }
-    
+    v->bal = 0;
+
+    return v;
+    } 
+
+    // rotação simples esquerda (RR)
+    //if(u->bal == 1){
+    p->dir = u->esq; // adota filho u
+    u->esq = p; // u vira nova raiz e p seu filho esquerdo
+    p->bal = 0; // atualiza fator de balanceamento
+    u->bal = 0;
+
+    return u;
+    //}
 }
 
-// Inserção AVL: p é inicializado com o endereco do nó raiz e *alterou com false
+PONT ehAVL(PONT p){
+    // atualiza o fator de balanceamento
+    p->bal = fatorBalanceamento(p);
+
+    // verifica balanceamento
+    // árvore pendendo à direita
+    if (p->bal > 1)
+        return rotacaoR(p);
+    // árvore pendendo à esquerda
+    else if (p->bal < -1)
+        return rotacaoL(p);
+    
+    return p;
+}
+
+// Inserção AVL: insere no com chave ch na arvore AVL
 PONT inserirAVL(PONT p, TIPOCHAVE ch) {
     // cria nó
     if(p == NULL)
@@ -168,19 +181,8 @@ PONT inserirAVL(PONT p, TIPOCHAVE ch) {
     else 
         return p;
 
-    // atualiza o fator de balanceamento
-    p->bal = fatorBalanceamento(p);
-
-    // verifica balanceamento
-    // árvore pendendo à direita
-    if (p->bal > 1)
-        return rotacaoR(p);
-    // árvore pendendo à esquerda
-    else if (p->bal < -1)
-        return rotacaoL(p);
-
-    return p; 
-}
+    return ehAVL(p);
+} 
 
 /* Retorna o endereco do NO que contem chave=ch ou NULL caso a chave nao seja
 encontrada. Utiliza busca binaria recursiva */
@@ -270,18 +272,7 @@ PONT excluirAVL(PONT raiz, TIPOCHAVE ch) {
     if(raiz == NULL)
         return raiz; 
 
-    // atualiza o fator de balanceamento
-    raiz->bal = fatorBalanceamento(raiz);
-
-    // verifica balanceamento
-    // árvore pendendo à direita
-    if(raiz->bal > 1)
-        return rotacaoR(raiz);
-    // árvore pendendo à esquerda
-    else if(raiz->bal < -1)
-        return rotacaoL(raiz);
-
-    return raiz; 
+    return ehAVL(raiz);
 }
 
 // funcao auxiliar na destruicao (liberacao da memoria) de uma arvore
@@ -354,33 +345,6 @@ void ligarNo(FILE* fdot, PONT pai, PONT filho) {
     fflush(fdot);
 }
 
-// Cria o png a partir do .dot
-void criarPngDot(const char nome[]) {
-    char nomearq[strlen(nome) + 6];
-    char nomepng[strlen(nome) + 6];
-
-    int n = 1;
-    sprintf(nomearq, "%s.dot", nome);
-    sprintf(nomepng, "%s.png", nome);
-
-    // Verifica se o arquivo já existe
-    FILE *vrfy = fopen(nomearq, "r");
-    while (vrfy != NULL)
-    {
-        fclose(vrfy);
-        char command[2 * strlen(nomearq) + 30];
-        sprintf(command, "dot -Tpng %s -o %s", nomearq, nomepng);
-
-        system(command);
-
-        n++;
-        sprintf(nomearq, "%s-%d.dot", nome, n);
-        sprintf(nomepng, "%s-%d.png", nome, n);
-        vrfy = fopen(nomearq, "r");
-    }
-
-}
-
 // percorre a arvore (usada na função imprimirAVL)
 void percorrerAVL(FILE* ArqDot, PONT raiz, int nivel) {
     if(raiz){
@@ -409,26 +373,27 @@ int main() {
     inicializar(&raiz);
 
     // inserção de elementos
-    raiz = inserirAVL(raiz, 24);
+    /* raiz = inserirAVL(raiz, 24);
     raiz = inserirAVL(raiz, 42);
     raiz = inserirAVL(raiz, 98);
     raiz = inserirAVL(raiz, 7);
     raiz = inserirAVL(raiz, 13);
     raiz = inserirAVL(raiz, 87);
     raiz = inserirAVL(raiz, 66);
-    raiz = inserirAVL(raiz, 90);
+    raiz = inserirAVL(raiz, 90); */
 
-    // desfaça o comentário para ver a exclusão
-    // deixei dessa forma para ver os diferentes fb da árvore,
-    // após a exclusão a árvore ficará cheia (todos fb = 0)
-    //raiz = excluirAVL(raiz, 87);
+    for(int i=0; i < 100; i++)
+        raiz = inserirAVL(raiz, i);
 
+    for(int i=0; i < 90; i++)
+        raiz = excluirAVL(raiz, i);
+
+    // imprimi arvore em ordem
     exibirArvoreEmOrdem(raiz);
     printf("\n");
 
-    // impressação àrvore AVL
+    // cria dot da arvore AVL
     imprimirAVL(raiz);
-    criarPngDot("ArqDot");
 
     // libera memória alocada para a árvore (remove todos os nós)
     destruirArvore(&raiz);
