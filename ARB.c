@@ -401,7 +401,7 @@ void ligarNo(RAIZ* T, FILE* fdot) {
 FILE* inicializarDot(char* fn) {
     FILE* fdot = fopen(fn, "w");
 
-    fprintf(fdot, "\tdigraph BlackRedTree {\n");
+    fprintf(fdot, "\tdigraph RedBlackTree {\n");
     fprintf(fdot, "\tnode [shape=circle];\n");
     return fdot;
 }
