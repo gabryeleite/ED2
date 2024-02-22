@@ -34,34 +34,44 @@ ALUNO criarNovoAluno(RAIZ* T, TIPOCHAVE ID) {
 
 void rotacaoL(RAIZ* T, ALUNO x) {
     ALUNO y = x->dir;
+    //if(y != T->nil) {
     x->dir = y->esq;
     if(y->esq != T->nil)
         y->esq->pai = x;
+
     y->pai = x->pai;
+
     if(x->pai == T->nil)
         T->raiz = y;
     else if(x == x->pai->esq)
         x->pai->esq = y;
     else
         x->pai->dir = y;
+
     y->esq = x;
     x->pai = y;
+    //}
 }
 
 void rotacaoR(RAIZ* T, ALUNO y) {
     ALUNO x = y->esq;
+    //if(x != T->nil) {
     y->esq = x->dir;
     if(x->dir != T->nil)
         x->dir->pai = y;
+
     x->pai = y->pai;
+
     if(y->pai == T->nil)
         T->raiz = x;
     else if(y == y->pai->dir)
         y->pai->dir = x;
     else
         y->pai->esq = x;
+
     x->dir = y;
     y->pai = x;
+    //}
 }
 
 void inserirAlunoFixup(RAIZ* T, ALUNO z) {
@@ -172,7 +182,7 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
                 w = x->pai->dir;
             }
             // CASO 2
-            if(w->esq->cor == 0 &&  w->dir->cor == 0) {
+            if(w->esq->cor == 0 && w->dir->cor == 0) {
                 printf("CASO 2: Irmão fica rubro; Suba um nível na árvore.\n");
                 w->cor = 1;
                 x = x->pai;
@@ -207,7 +217,7 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
                 w = x->pai->esq;
             }
             // CASO 2
-            if(w->dir->cor == 0 &&  w->esq->cor == 0) {
+            if(w->dir->cor == 0 && w->esq->cor == 0) {
                 printf("CASO 2: Irmão fica rubro; Suba um nível na árvore.\n");
                 w->cor = 1;
                 x = x->pai;
@@ -234,8 +244,6 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
     }
     x->cor = 0;
 
-    while(T->raiz->pai != T->nil)
-        T->raiz = T->raiz->pai;
 }
 
 ALUNO minimo(RAIZ* T, ALUNO x) {
@@ -244,7 +252,6 @@ ALUNO minimo(RAIZ* T, ALUNO x) {
     return x;
 }
 
-// AQUi E NO FINAL DE INSERIR
 ALUNO sucessor(RAIZ* T, ALUNO x) {
     if(x->dir != T->nil)
         return minimo(T, x->dir);
@@ -276,7 +283,7 @@ void removerAluno(RAIZ* T, TIPOCHAVE ID) {
         x = y->dir;
 
     if(x != T->nil)
-        x->pai = y->pai; // Faça isso, mesmo se x for NULL
+        x->pai = y->pai; // mesmo se x for NULL
     
     if(y->pai == T->nil)
         T->raiz = x;
@@ -309,45 +316,32 @@ int alturaTotal(RAIZ* T, ALUNO x) {
     return 1 + max(alturaEsq, alturaDir);
 }
 
-void destruirAux(RAIZ* T, ALUNO x) {
-    if(x != T->nil){
-        destruirAux(T, x->esq); 
-        destruirAux(T, x->dir); 
-
-        free(x); 
+void destruirArvoreRB(RAIZ* T, ALUNO x) {
+    if(x != T->nil) {
+        destruirArvoreRB(T, x->esq);
+        destruirArvoreRB(T, x->dir);
+        free(x);
     }
-}
-
-void destruirArvoreRB(RAIZ* T) {
-    // libera todos os nós da árvore
-    destruirAux(T, T->raiz); 
-
     // define raiz como NULL
     T->raiz = T->nil; 
 }
 
-void alturaNegraAux(RAIZ* T, ALUNO x, int altAtual, int *altNegra) {
-    if(x == T->nil) {
-        if(*altNegra == -1 || altAtual < *altNegra)
-            *altNegra = altAtual;
-        return;
+int alturaNegra(RAIZ* T, ALUNO x) {
+    if(x == T->nil) 
+        return 0; // Não conto nó nulo
+    
+    int altEsq = 0, altDir = 0;
+
+    if(x->cor == 0) {
+        altEsq = 1 + alturaNegra(T, x->esq);
+        altDir = 1 + alturaNegra(T, x->dir);
+    }
+    else {
+        altEsq += alturaNegra(T, x->esq);
+        altDir += alturaNegra(T, x->dir);
     }
     
-    if(x->cor == 0) // Nó preto
-        altAtual++;
-    
-    alturaNegraAux(T, x->esq, altAtual, altNegra);
-    alturaNegraAux(T, x->dir, altAtual, altNegra);
-}
-
-int alturaNegra(RAIZ *T) {
-    if(T == NULL || T->raiz == T->nil) 
-        return -1;
-    
-    int altNegra = -1;
-    alturaNegraAux(T, T->raiz, 0, &altNegra);
-
-    return altNegra;
+    return max(altEsq, altDir);
 }
 
 void contarNos(RAIZ *T, ALUNO x, int *rubro, int *preto) {
@@ -435,21 +429,21 @@ int main() {
     RAIZ T;
     inicializarRB(&T);
 
-    //for(int i=0; i <= 200; i++) 
+    //for(int i=0; i <= 100; i++) 
     //    inserirAluno(&T, i);  
 
     //insere de tras p frente
-    for(int i=200; i >= 0; i--) 
+    for(int i=100; i >= 0; i--) 
         inserirAluno(&T, i); 
 
     printf("\nREMOCAO\n");
 
-    for(int i=0; i <= 187; i++)
-        removerAluno(&T, i); 
+    for(int i=0; i <= 87; i++)
+       removerAluno(&T, i); 
  
     // remove de tras p frente
-    //for(int i=187; i >= 0; i--) 
-    //    removerAluno(&T, i);   
+    //for(int i=87; i >= 0; i--) 
+      //  removerAluno(&T, i);   
 
     printf("Arvore Rubro-Negra em ordem:\n");
     exibirArvoreEmOrdem(&T, T.raiz);
@@ -460,7 +454,7 @@ int main() {
     //printf(busca != NULL ? "\nAluno encontrado!\nComparacoes: %d\n" : "\nAluno nao encontrado!\nComparacoes: %d\n", custo);
 
     printf("\nAltura total da arvore: %d\n", alturaTotal(&T, T.raiz));
-    printf("Altura Negra da arvore: %d\n", alturaNegra(&T));
+    printf("Altura Negra da arvore: %d\n", alturaNegra(&T, T.raiz));
 
     calcularPorcentagem(&T, T.raiz);
 
@@ -469,7 +463,7 @@ int main() {
     terminarDot(fdot);
 
     // libera memória alocada para a árvore (remove todos os nós)
-    destruirArvoreRB(&T);
+    destruirArvoreRB(&T, T.raiz);
 
     return 0;
 }
