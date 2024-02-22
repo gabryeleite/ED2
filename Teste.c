@@ -34,44 +34,44 @@ ALUNO criarNovoAluno(RAIZ* T, TIPOCHAVE ID) {
 
 void rotacaoL(RAIZ* T, ALUNO x) {
     ALUNO y = x->dir;
-    //if(y != T->nil) {
-    x->dir = y->esq;
-    if(y->esq != T->nil)
-        y->esq->pai = x;
+    if(y != T->nil) {
+        x->dir = y->esq;
+        if(y->esq != T->nil)
+            y->esq->pai = x;
 
-    y->pai = x->pai;
+        y->pai = x->pai;
 
-    if(x->pai == T->nil)
-        T->raiz = y;
-    else if(x == x->pai->esq)
-        x->pai->esq = y;
-    else
-        x->pai->dir = y;
+        if(x->pai == T->nil)
+            T->raiz = y;
+        else if(x == x->pai->esq)
+            x->pai->esq = y;
+        else
+            x->pai->dir = y;
 
-    y->esq = x;
-    x->pai = y;
-    //}
+        y->esq = x;
+        x->pai = y;
+    }
 }
 
 void rotacaoR(RAIZ* T, ALUNO y) {
     ALUNO x = y->esq;
-    //if(x != T->nil) {
-    y->esq = x->dir;
-    if(x->dir != T->nil)
-        x->dir->pai = y;
+    if(x != T->nil) {
+        y->esq = x->dir;
+        if(x->dir != T->nil)
+            x->dir->pai = y;
 
-    x->pai = y->pai;
+        x->pai = y->pai;
 
-    if(y->pai == T->nil)
-        T->raiz = x;
-    else if(y == y->pai->dir)
-        y->pai->dir = x;
-    else
-        y->pai->esq = x;
+        if(y->pai == T->nil)
+            T->raiz = x;
+        else if(y == y->pai->dir)
+            y->pai->dir = x;
+        else
+            y->pai->esq = x;
 
-    x->dir = y;
-    y->pai = x;
-    //}
+        x->dir = y;
+        y->pai = x;
+    }
 }
 
 void inserirAlunoFixup(RAIZ* T, ALUNO z) {
@@ -144,9 +144,11 @@ void inserirAluno(RAIZ* T, TIPOCHAVE ID) {
         y->esq = z;
     else
         y->dir = z;
+
     z->esq = T->nil;
     z->dir = T->nil;
-    z->cor = 1; // Vermelho
+    z->cor = 1; // vermelho
+
     inserirAlunoFixup(T, z);
 }
 
@@ -170,6 +172,7 @@ ALUNO buscarAluno(RAIZ* T, ALUNO x, TIPOCHAVE ID, int *custo) {
 }
 
 void removerAlunoFixup(RAIZ* T, ALUNO x) {
+    //if(x->pai != T->nil) { 
     while(x != T->raiz && x->cor == 0) {
         if(x == x->pai->esq) {
             ALUNO w = x->pai->dir;
@@ -182,14 +185,14 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
                 w = x->pai->dir;
             }
             // CASO 2
-            if(w->esq->cor == 0 && w->dir->cor == 0) {
+            if((w->esq != T->nil || w->esq->cor == 0) && (w->dir != T->nil || w->dir->cor == 0)) {
                 printf("CASO 2: Irmão fica rubro; Suba um nível na árvore.\n");
                 w->cor = 1;
                 x = x->pai;
                 //x->pai = x->pai->pai;
             } else {
             // CASO 3
-                if(w->dir->cor == 0) {
+                if(w->dir != T->nil || w->dir->cor == 0) {
                     printf("CASO 3: Irmão fica rubro; Sobrinho esquerdo fica negro; Rotaciona o irmão a direita.\n");
                     w->esq->cor = 0;
                     w->cor = 1;
@@ -217,14 +220,14 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
                 w = x->pai->esq;
             }
             // CASO 2
-            if(w->dir->cor == 0 && w->esq->cor == 0) {
+            if((w->dir != T->nil || w->dir->cor == 0) && (w->esq != T->nil || w->esq->cor == 0)) {
                 printf("CASO 2: Irmão fica rubro; Suba um nível na árvore.\n");
                 w->cor = 1;
                 x = x->pai;
                 //x->pai = x->pai->pai;
             } else {
             // CASO 3
-                if(w->esq->cor == 0) {
+                if(w->esq != T->nil || w->esq->cor == 0) {
                     printf("CASO 3: Irmão fica rubro; Sobrinho direito fica negro; Rotaciona o irmão a esquerda.\n");
                     w->dir->cor = 0;
                     w->cor = 1;
@@ -242,8 +245,10 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
         }
 
     }
-    x->cor = 0;
-
+    if(x != T->nil)
+        x->cor = 0;
+    //while(T->raiz->pai != T->nil)
+    //    T->raiz = T->raiz->pai;
 }
 
 ALUNO minimo(RAIZ* T, ALUNO x) {
@@ -283,7 +288,7 @@ void removerAluno(RAIZ* T, TIPOCHAVE ID) {
         x = y->dir;
 
     if(x != T->nil)
-        x->pai = y->pai; // mesmo se x for NULL
+        x->pai = y->pai; 
     
     if(y->pai == T->nil)
         T->raiz = x;
@@ -295,9 +300,8 @@ void removerAluno(RAIZ* T, TIPOCHAVE ID) {
     if(y != z)
         z->id = y->id;
 
-    if(y->cor == 0 && x != T->nil) {
+    if(y->cor == 0 && x != T->nil)
         removerAlunoFixup(T, x);
-    }
 
     free(y);
 } 
@@ -429,19 +433,36 @@ int main() {
     RAIZ T;
     inicializarRB(&T);
 
+    inserirAluno(&T, 10);
+    inserirAluno(&T, 20);
+    inserirAluno(&T, 30);
+    inserirAluno(&T, 40);
+    inserirAluno(&T, 50);
+    inserirAluno(&T, 9);
+    inserirAluno(&T, 8);
+    inserirAluno(&T, 6);
+    inserirAluno(&T, 7);
+    inserirAluno(&T, 5);
+    //inserirAluno(&T, 60); 
+
+    //removerAluno(&T, 20);
+    //removerAluno(&T, 9);
+    //removerAluno(&T, 50);
+    //removerAluno(&T, 30); 
+
     //for(int i=0; i <= 100; i++) 
     //    inserirAluno(&T, i);  
 
-    //insere de tras p frente
-    for(int i=100; i >= 0; i--) 
-        inserirAluno(&T, i); 
+    //insere de trás p frente
+    //for(int i=100; i >= 0; i--) 
+      //  inserirAluno(&T, i); 
 
-    printf("\nREMOCAO\n");
+    //printf("\nREMOÇÃO\n");
 
-    for(int i=0; i <= 87; i++)
-       removerAluno(&T, i); 
+    //for(int i=0; i <= 87; i++)
+      // removerAluno(&T, i); 
  
-    // remove de tras p frente
+    // remove de trás p frente
     //for(int i=87; i >= 0; i--) 
       //  removerAluno(&T, i);   
 
