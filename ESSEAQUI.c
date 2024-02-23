@@ -172,7 +172,6 @@ ALUNO buscarAluno(RAIZ* T, ALUNO x, TIPOCHAVE ID, int *custo) {
 }
 
 void removerAlunoFixup(RAIZ* T, ALUNO x) {
-    //if(x->pai != T->nil) { 
     while(x != T->raiz && x->cor == 0) {
         if(x == x->pai->esq) {
             ALUNO w = x->pai->dir;
@@ -184,14 +183,11 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
                 rotacaoL(T, x->pai);
                 w = x->pai->dir;
             }
-            //printf("Sai CASO 1");
             // CASO 2
             if(w != T->nil && (w->esq == T->nil || w->esq->cor == 0) && (w->dir == T->nil || w->dir->cor == 0)) {
                 printf("CASO 2: Irmão fica rubro; Suba um nível na árvore.\n");
                 w->cor = 1;
                 x = x->pai;
-                //x->cor = 0;
-                //x->pai = x->pai->pai;
             } else {
             // CASO 3
                 if(w != T->nil && (w->dir == T->nil || w->dir->cor == 0)) {
@@ -202,15 +198,12 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
                     w = x->pai->dir;
                 }
             // CASO 4
-                //if(w != T->nil && (w->esq == T->nil || w->esq->cor == 1)) {
-                    printf("CASO 4: Pai fica negro; Irmão fica rubro; Sobrinho direito fica negro; Rotaciona o pai a esquerda.\n");
-                    w->cor = x->pai->cor;
-                    x->pai->cor = 0;
-                    w->dir->cor = 0;
-                    rotacaoL(T, x->pai);
-                    x = T->raiz;
-                //}
-
+                printf("CASO 4: Pai fica negro; Irmão fica rubro; Sobrinho direito fica negro; Rotaciona o pai a esquerda.\n");
+                w->cor = x->pai->cor;
+                x->pai->cor = 0;
+                w->dir->cor = 0;
+                rotacaoL(T, x->pai);
+                x = T->raiz;
             }
         
         } else {
@@ -229,8 +222,6 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
                 printf("CASO 2: Irmão fica rubro; Suba um nível na árvore.\n");
                 w->cor = 1;
                 x = x->pai;
-                //x->cor = 0;
-                //x->pai = x->pai->pai;
             } else {
             // CASO 3
                 if(w != T->nil && (w->esq == T->nil || w->esq->cor == 0)) {
@@ -241,15 +232,12 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
                     w = x->pai->esq;
                 }
             // CASO 4
-                //if(w != T->nil && (w->esq == T->nil || w->esq->cor == 1)) {
-                    printf("CASO 4: Pai fica negro; Irmão fica rubro; Sobrinho esquerdo fica negro; Rotaciona o pai a direita.\n");
-                    w->cor = x->pai->cor;
-                    x->pai->cor = 0;
-                    w->esq->cor = 0;
-                    rotacaoR(T, x->pai);
-                    x = T->raiz;
-                //}
-
+                printf("CASO 4: Pai fica negro; Irmão fica rubro; Sobrinho esquerdo fica negro; Rotaciona o pai a direita.\n");
+                w->cor = x->pai->cor;
+                x->pai->cor = 0;
+                w->esq->cor = 0;
+                rotacaoR(T, x->pai);
+                x = T->raiz;
             }
         }
 
@@ -257,62 +245,9 @@ void removerAlunoFixup(RAIZ* T, ALUNO x) {
     x->cor = 0;
 } 
 
-ALUNO minimo(RAIZ* T, ALUNO x) {
-    while(x->esq != T->nil)
-        x = x->esq;
-    return x;
-}
-
-ALUNO sucessor(RAIZ* T, ALUNO x) {
-    if(x->dir != T->nil)
-        return minimo(T, x->dir);
-
-    ALUNO y = x->pai;
-    while(y != T->nil && x == y->dir) {
-        x = y;
-        y = y->pai;
-    }
-    return y;
-}
-
-/* void removerAluno(RAIZ* T, TIPOCHAVE ID) {
-
-    int custo = 0;
-    ALUNO z = buscarAluno(T, T->raiz, ID, &custo);
-    if(z == T->nil)
-        return;
-
-    ALUNO x, y = z;
-    int y_cor_atual = y->cor;
-
-    if(z->esq == T->nil || z->dir == T->nil) {
-        x = (z->esq != T->nil) ? z->esq : z->dir;
-        transplant(T, z, x);
-    }
-    else {
-        y = sucessor(T, z);
-        y_cor_atual = y->cor;
-        x = y->dir;
-
-        if(y->pai != z) {
-            transplant(T, y, x);
-            y->dir = z->dir;
-            y->dir->pai = y;
-        }
-        transplant(T, z, y);
-        y->esq = z->esq;
-        y->esq->pai = y;
-        y->cor = z->cor;
-    }
-    if(y_cor_atual == 0 && x != T->nil)
-        removerAlunoFixup(T, x);
-
-    free(z);
-}  */
-
 void removerAluno(RAIZ *T, RAIZ* auxT, TIPOCHAVE ID) {
     ALUNO aux = auxT->raiz;
-    // Nó raiz folha
+    // nó raiz folha
     if(aux->id == ID && aux->esq == T->nil && aux->dir == T->nil && aux->pai == T->nil) {
         free(aux);
         T->raiz = T->nil;
@@ -330,12 +265,10 @@ void removerAluno(RAIZ *T, RAIZ* auxT, TIPOCHAVE ID) {
         printf("Aluno não encontrado!\n");
         return;
     }
-    // Nó folha
+    // nó folha
     if(aux->esq == T->nil && aux->dir == T->nil) {
-        printf("Antes Fixup\n");
         if(aux->cor == 0)
             removerAlunoFixup(T, aux);
-        printf("Depois Fixup\n");
         
         if(aux == aux->pai->esq)
             aux->pai->esq = T->nil;
@@ -343,33 +276,33 @@ void removerAluno(RAIZ *T, RAIZ* auxT, TIPOCHAVE ID) {
             aux->pai->dir = T->nil;
         free(aux);
     } 
-    // Nó com 1 ou 2 filhos
+    // nó com 1 ou 2 filhos
     else {
-        ALUNO suc;
-        RAIZ arvoreSuc;
+        ALUNO sucessor;
+        RAIZ Tsucessor;
 
         if(aux->esq != T->nil) {
-            suc = aux->esq;
+            sucessor = aux->esq;
 
-            while (suc->dir != T->nil)
-                suc = suc->dir;
+            while (sucessor->dir != T->nil)
+                sucessor = sucessor->dir;
 
-            aux->id = suc->id;
-            suc->id = ID;
-            arvoreSuc.raiz = aux->esq;
+            aux->id = sucessor->id;
+            sucessor->id = ID;
+            Tsucessor.raiz = aux->esq;
         }
         else {
-            suc = aux->dir;
+            sucessor = aux->dir;
 
-            while (suc->esq != T->nil)
-                suc = suc->esq;
+            while (sucessor->esq != T->nil)
+                sucessor = sucessor->esq;
 
-            aux->id = suc->id;
-            suc->id = ID;
-            arvoreSuc.raiz = aux->dir;
+            aux->id = sucessor->id;
+            sucessor->id = ID;
+            Tsucessor.raiz = aux->dir;
         }
 
-        removerAluno(T, &arvoreSuc, ID);
+        removerAluno(T, &Tsucessor, ID);
     }
 
 }  
@@ -501,7 +434,7 @@ int main() {
     RAIZ T;
     inicializarRB(&T);
 
-    /* inserirAluno(&T, 1);
+    inserirAluno(&T, 1);
     inserirAluno(&T, 2);
     inserirAluno(&T, 3);
     inserirAluno(&T, 4);
@@ -515,24 +448,24 @@ int main() {
 
     removerAluno(&T, &T, 4);
     removerAluno(&T, &T, 3);
-    removerAluno(&T, &T, 2);   */
+    removerAluno(&T, &T, 2);   
     //removerAluno(&T, 30);  
 
     //for(int i=0; i <= 100; i++) 
       //  inserirAluno(&T, i);  
 
     //insere de trás p frente
-    for(int i=100; i >= 0; i--) 
-        inserirAluno(&T, i); 
+    //for(int i=100; i >= 0; i--) 
+      //  inserirAluno(&T, i); 
 
-    printf("\nREMOÇÃO\n");
+    //printf("\nREMOÇÃO\n");
 
     //for(int i=0; i <= 87; i++)
       // removerAluno(&T, &T, i); 
  
     // remove de trás p frente
-    for(int i=87; i >= 0; i--) 
-        removerAluno(&T, &T, i);   
+    //for(int i=87; i >= 0; i--) 
+      //  removerAluno(&T, &T, i);   
 
     printf("Arvore Rubro-Negra em ordem:\n");
     exibirArvoreEmOrdem(&T, T.raiz);
