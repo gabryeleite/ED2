@@ -1,5 +1,5 @@
 #include <stdio.h> 
-#define MAX 1000 
+#define MAX 100
 
 typedef struct { 
     int u, v, peso; 
@@ -37,22 +37,23 @@ void kruskal(Aresta E[], int nAresta, int nVertice, Aresta A[]) {
     } 
 }
 
-/* KRUSKAL(G(V,E,w)) : A 
-    A <- {}  // Inicializa a árvore geradora mínima como um conjunto vazio
-    C <- {}  // Inicializa o conjunto de componentes conexos
-    for i = {1,...,n} em V:  // Para cada vértice em V
-        C[i] <- i  // Inicializa o conjunto de componentes conexos com vértices individuais
-
-    ordene as arestas de E por peso  // Ordena as arestas em ordem crescente de peso
-    for (u,v) in E, em ordem de peso:  // Para cada aresta (u,v) em E, em ordem de peso
-        if C[u] != C[v]:  // Se os vértices 'u' e 'v' não estão na mesma componente conexa
-            A <- A ∪ {(u,v)}  // Adiciona a aresta (u,v) à árvore geradora mínima A
-            k <- C[u]  // Armazena o identificador da componente conexa de 'u'
-            for i = {1,...,n} em C:  // Para cada vértice em C
-                if C[i] = k:  // Se o vértice pertence à mesma componente conexa que 'u'
-                    C[i] <- C[v]  // Atualiza o identificador da componente conexa para o de 'v'
-                fim-se 
-            fim-para 
-        fim-se 
-    return A  // Retorna a árvore geradora mínima A
+/* Kruskal(G(V,E,w),s): A // parametros: representaçao de grafo (V,E,w)
+    A = vazio // A representa a árvore geradora mínima
+    C = vazio // C: vetor que indica a qual árvore pertence cada vértice
+    para i = {1,...,n} em V faça
+        C[i] = i // make-set(i): marca cada vertice pertencente a um conjunto (árvore) distinto
+    fim-para
+    ordene as arestas de E por peso
+    para cada aresta (u,v) em E, em ordem de peso, faça
+        se C[u] != C[v] entao
+            A = A uniao {(u,v)} // adiciona aresta(u,v) na arvore geradora minima
+            k = C[u]
+            para i = {1,...,n} em C faça
+                se C[i] == k entao
+                    C[i] = C[v]
+                fim-se
+            fim-para
+        fim-se
+    fim-para
+    retorne A
 FIM */
