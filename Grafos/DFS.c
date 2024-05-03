@@ -9,7 +9,7 @@
 
 int tempo = 0; 
 
-void visitaDFS(int u, int V, int A[][V], int cor[], int pai[], int d[]) {
+void visitaDFS(int u, int V, int A[][V], int cor[], int pai[], int d[], int f[]) {
     cor[u] = GRAY;
     tempo++;
     d[u] = tempo;
@@ -20,26 +20,28 @@ void visitaDFS(int u, int V, int A[][V], int cor[], int pai[], int d[]) {
         int v = A[u][i + 1];
         if(cor[v] == WHITE) {
             pai[v] = u;
-            DFS_visit(v, V, A, cor, pai, d);
+            DFS_visit(v, V, A, cor, pai, d, f);
         }
     }
     cor[u] = BLACK;
+    tempo++;
+    f[u] = tempo;
 }
 
 void DFS(int V, int A[][V]) {
-    int cor[V], pai[V], d[V];
+    int cor[V], pai[V];
+    int d[V], f[V]; // d[]: momento cinza(descoberto), f[]: momento preto(examinou vizinhos) 
     // inicializa vertices
     for(int u = 0; u < V; u++) {
         cor[u] = WHITE;
         pai[u] = NIL;
-        d[u] = 0;
     }
 
     // para cada vertice u
     for(int u = 0; u < V; u++) {
         if(cor[u] == WHITE) {
-            visitaDFS(u, V, A, cor, pai, d);
+            visitaDFS(u, V, A, cor, pai, d, f);
         }
     }
-    // o algoritmo pode ser implmentado sem a necessidade da variavel tempo e o vetor d[]
+    // o algoritmo pode ser implmentado sem a necessidade da variavel tempo e os vetores d[] e f[]
 }
