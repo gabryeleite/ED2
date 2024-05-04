@@ -11,8 +11,7 @@ int tempo = 0;
 
 void visitaDFS(int u, int V, int A[][V], int cor[], int pai[], int d[], int f[]) {
     cor[u] = GRAY;
-    tempo++;
-    d[u] = tempo;
+    d[u] = ++tempo;
     printf("%d ", u); // Ação específica para o DFS, como imprimir ou armazenar o vértice
 
     // para cada vertice v adjacente a u
@@ -24,8 +23,7 @@ void visitaDFS(int u, int V, int A[][V], int cor[], int pai[], int d[], int f[])
         }
     }
     cor[u] = BLACK;
-    tempo++;
-    f[u] = tempo;
+    f[u] = ++tempo;
 }
 
 void DFS(int V, int A[][V]) {
