@@ -20,7 +20,7 @@ void visitaDFS(int u, int V, int A[][V], int cor[], int pai[], int d[], int f[])
         int v = A[u][i + 1];
         if(cor[v] == WHITE) {
             pai[v] = u;
-            DFS_visit(v, V, A, cor, pai, d, f);
+            visitaDFS(v, V, A, cor, pai, d, f);
         }
     }
     cor[u] = BLACK;
@@ -39,9 +39,8 @@ void DFS(int V, int A[][V]) {
 
     // para cada vertice u
     for(int u = 0; u < V; u++) {
-        if(cor[u] == WHITE) {
+        if(cor[u] == WHITE) 
             visitaDFS(u, V, A, cor, pai, d, f);
-        }
     }
     // o algoritmo pode ser implmentado sem a necessidade da variavel tempo e os vetores d[] e f[]
 }
