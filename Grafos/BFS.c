@@ -15,16 +15,17 @@ void BFS(int V, int A[][V], int s) {
         dist[u] = INT_MAX/2;
         pai[u] = NIL;
     }
+    // s: vertice de origem
     cor[s] = GRAY;
     dist[s] = 0;
     pai[s] = NIL;
 
     int Q[V], front = 0, rear = -1;
-    Q[++rear] = s;
+    Q[++rear] = s; // enqueue(Q, s)
 
     // enquanto a fila Q nao estiver vazia
     while(front <= rear) {
-        int u = Q[front++];\
+        int u = Q[front++]; // dequeue(Q)
         // para cada vertice v adjacente a u
         for(int i = 0; i < A[u][0]; i++) {
             int v = A[u][i + 1];
@@ -32,7 +33,7 @@ void BFS(int V, int A[][V], int s) {
                 cor[v] = GRAY;
                 dist[v] = dist[u] + 1;
                 pai[v] = u; // u vertece que precede v
-                Q[++rear] = v;
+                Q[++rear] = v; // enqueue(Q, v)
             }
         }
         cor[u] = BLACK;
